@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import logging
+import json, logging
 from sys import stderr
 from ctf import cli, diff_analysis, connect_to_labels, ContentTests, DiffLogging
 from ctf.diff import git_wrapper
@@ -30,7 +30,7 @@ if __name__ == '__main__':
     changed_files = git_wrapper.git_diff_files(options.base_branch,
                                                new_branch=options.branch,
                                                pr_number=options.pr_number)
-
+    controls_files = []
     # Analyze each file separately and make set of tests for each one
     while True:
         if not changed_files:  # Finish when all files are analysed
@@ -42,6 +42,10 @@ if __name__ == '__main__':
 
         if file_record["filepath"].startswith(".github"):
             continue
+
+        # Filter the updated control files
+        if "controls/" in file_record["filepath"]:
+            controls_files.append(file_record["filepath"])
 
         try:
             diff_structure = diff_analysis.analyse_file(file_record)
@@ -55,11 +59,19 @@ if __name__ == '__main__':
         already_analysed.append(file_record["filepath"])
         # If change affected any other file -> analyse it
         changed_files.extend(diff_structure.affected_files)
-
     list_of_tests = connect_to_labels.get_labels(tests, options.output)
     if options.output == "json":
         logs.print_json(list_of_tests)
     else:
         logs.print_all_logs(list_of_tests, output_format=options.output_format)
-
+    # Save the updated controls to a file for syncing OSCAL catalog
+    logger.debug(f"The updated controls: {controls_files}")
+    if options.output == "json":
+        controls_updates = {"controls": controls_files}
+        try:
+            with open('controls_updates.json', 'w', encoding='utf-8') as file:
+                json.dump(controls_updates, file, ensure_ascii=False, indent=4)
+            logger.debug("Controls saved to controls_updates.json successfully.")
+        except Exception as e:
+            logger.error(f"Error saving controls updates: {e}")
     logger.debug("Finished")
