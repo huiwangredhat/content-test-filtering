@@ -43,9 +43,10 @@ if __name__ == '__main__':
         if file_record["filepath"].startswith(".github"):
             continue
 
-        # Filter the updated control files
+        # Filter the updated control files for syncing OSCAL catalog
         if "controls/" in file_record["filepath"]:
-            controls_files.append(file_record["filepath"])
+            control_file = file_record["filepath"].split('/')[-1]
+            controls_files.append(control_file)
 
         try:
             diff_structure = diff_analysis.analyse_file(file_record)
@@ -62,16 +63,10 @@ if __name__ == '__main__':
     list_of_tests = connect_to_labels.get_labels(tests, options.output)
     if options.output == "json":
         logs.print_json(list_of_tests)
+        logger.debug(f"The updated controls: {controls_files}")
+        if controls_files:
+            controls_updates = [{"controls": controls_files}]
+            logs.print_json(controls_updates)
     else:
         logs.print_all_logs(list_of_tests, output_format=options.output_format)
-    # Save the updated controls to a file for syncing OSCAL catalog
-    logger.debug(f"The updated controls: {controls_files}")
-    if options.output == "json":
-        controls_updates = {"controls": controls_files}
-        try:
-            with open('controls_updates.json', 'w', encoding='utf-8') as file:
-                json.dump(controls_updates, file, ensure_ascii=False, indent=4)
-            logger.debug("Controls saved to controls_updates.json successfully.")
-        except Exception as e:
-            logger.error(f"Error saving controls updates: {e}")
     logger.debug("Finished")
