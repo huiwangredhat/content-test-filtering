@@ -64,7 +64,7 @@ if __name__ == '__main__':
     if options.output == "json":
         logs.print_json(list_of_tests)
         logger.debug(f"The updated controls: {controls_files}")
-        if controls_files:
+        if controls_files and options.control_output:
             controls_updates = [{"controls": controls_files}]
             logs.print_json(controls_updates)
     else:

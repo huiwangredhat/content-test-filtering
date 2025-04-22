@@ -37,6 +37,8 @@ def parse_args():
                                action="store_true", help="Print only profile tests.")
     common_parser.add_argument("--rule", dest="rule_output", default=False,
                                action="store_true", help="Print only rule tests.")
+    common_parser.add_argument("--control", dest="control_output", default=False,
+                               action="store_true", help="Print control updates.")
 
     parser.set_defaults(pr_number=None, branch=None)
 

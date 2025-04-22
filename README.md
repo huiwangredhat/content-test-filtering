@@ -52,6 +52,7 @@ Both options have common optional arguments:
                         Output from the tool.
   --profile             Print only profile tests.
   --rule                Print only rule tests.
+  --control             Print the updates of control files.
 ```
 
 ### Remote vs local analysis
